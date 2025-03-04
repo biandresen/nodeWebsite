@@ -1,0 +1,13 @@
+{
+  "name": "nodewebsite",
+  "version": "1.0.0",
+  "description": "First Node.js website project from the course: \"The Odin Project\"",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "run": "nodemon app.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

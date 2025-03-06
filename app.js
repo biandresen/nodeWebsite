@@ -1,42 +1,43 @@
 import http from "http";
-import { logRequestInfo, readFile } from "./utils.js";
-
-const PORT = 3000;
+import { logRequestInfo, serveRequest } from "./utils.js";
+import { codes as c, paths as p, mimeTypes as m } from "./config.js";
+import { extname } from "path";
 
 // Server setup
-const server = http.createServer(async (req, res) => {
+const server = http.createServer((req, res) => {
   logRequestInfo(req); //Logging info about the request to console
   const clientMethod = req.method;
   const clientUrl = req.url;
 
-  if (clientMethod === "GET") {
-    let data;
+  if (clientUrl.startsWith("/public/")) {
+    const filePath = `.${clientUrl}`;
+    const ext = extname(filePath);
+    const mimeType = m[ext] || "application/octet-stream";
+    return serveRequest(res, filePath, c.statusCodeOk, mimeType);
+  }
+
+  if (clientMethod === c.GET) {
     switch (clientUrl) {
-      case "/":
-        data = await readFile("./views/index.html", "utf8");
-        res.writeHead(200, { "Content-Type": "text/html" });
-        res.end(data);
+      case p.requestHomePath:
+        serveRequest(res, p.pathHomepage, c.statusCodeOk, m.mimeTypeHtml);
         break;
-      case "/about":
-        data = await readFile("./views/about.html", "utf8");
-        res.writeHead(200, { "Content-Type": "text/html" });
-        res.end(data);
+      case p.requestAboutPath:
+        serveRequest(res, p.pathAbout, c.statusCodeOk, m.mimeTypeHtml);
         break;
-      case "/contact-me":
-        data = await readFile("./views/contact-me.html", "utf8");
-        res.writeHead(200, { "Content-Type": "text/html" });
-        res.end(data);
+      case p.requestContactMePath:
+        serveRequest(res, p.pathContactMe, c.statusCodeOk, m.mimeTypeHtml);
         break;
       default:
-        data = await readFile("./views/404.html", "utf8");
-        res.writeHead(404, { "Content-Type": "text/html" });
-        res.end(data);
+        serveRequest(res, p.path404Page, c.statusCodeNotFound, m.mimeTypeHtml);
         break;
     }
+  } else {
+    res.writeHead(405, { "Content-Type": m.mimeTypePlain });
+    res.end("405 - Method Not Allowed");
   }
 });
 
 // Start server listening
-server.listen(PORT, () => {
-  console.log(`Listening to server on port ${PORT}`);
+server.listen(c.PORT, () => {
+  console.log(`Listening to server on port ${c.PORT}`);
 });
